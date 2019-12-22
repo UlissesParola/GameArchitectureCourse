@@ -5,38 +5,54 @@ using UnityEngine;
 using NUnit.Framework;
 using NSubstitute;
 
-public class moving_with_horizontal_input
+namespace a_player
 {
-    [UnityTest]
-    public IEnumerator moving_left()
+    public class moving_with_horizontal_input
     {
-        //Arrange
-        var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        floor.transform.localScale = new Vector3(50, 0.1f, 50);
-        floor.transform.position = Vector3.zero;
+        [UnityTest]
+        public IEnumerator moving_left()
+        {
+            //Arrange
+            TestHelper.CreateFloor();
 
-        var playerObject = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        playerObject.transform.position = new Vector3(0, 1.10f, 0);
-        playerObject.AddComponent<CharacterController>();
+            var player = TestHelper.CreatePlayer();
 
-        Player player = playerObject.AddComponent<Player>();
 
-        var PlayerObjectInput = Substitute.For<PlayerInput>();
+            player.PlayerInput.Horizontal.Returns(-1f);
 
-        player.PlayerInput = PlayerObjectInput;
+            float startXPosition = player.transform.position.x;
 
-        PlayerObjectInput.Horizontal.Returns(-1f);
+            //Act
+            yield return new WaitForSeconds(0.5f);
 
-        float startXPosition = playerObject.transform.position.x;
+            float endingXPosition = player.transform.position.x;
 
-        //Act
-        yield return new WaitForSeconds(5f);
+            //Assert
+            Assert.Greater(startXPosition, endingXPosition);
+        }
 
-        float endingXPosition = playerObject.transform.position.x;
+        [UnityTest]
+        public IEnumerator moving_right()
+        {
+            //Arrange
+            TestHelper.CreateFloor();
 
-        //Assert
-        Assert.Greater(startXPosition, endingXPosition);
+            var player = TestHelper.CreatePlayer();
+
+
+            player.PlayerInput.Horizontal.Returns(1f);
+
+            float startXPosition = player.transform.position.x;
+
+            //Act
+            yield return new WaitForSeconds(0.5f);
+
+            float endingXPosition = player.transform.position.x;
+
+            //Assert
+            Assert.Less(startXPosition, endingXPosition);
+        }
 
     }
-
 }
+

@@ -12,28 +12,18 @@ namespace a_player
         public IEnumerator moving_forward()
         {
             //ARRANGE
-            var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            floor.transform.localScale = new Vector3(50, 0.1f, 50);
-            floor.transform.position = Vector3.zero;
+            TestHelper.CreateFloor();
+            var player = TestHelper.CreatePlayer();
+            player.PlayerInput.Vertical.Returns(1f);
 
-            var playerObject = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            playerObject.AddComponent<CharacterController>();
-            playerObject.transform.position = new Vector3(0, 1.10f, 0);
-
-            Player player = playerObject.AddComponent<Player>();
-
-            float startingZPosition = playerObject.transform.position.z;
-
-            var playerInput = Substitute.For<PlayerInput>();
-            playerInput.Vertical.Returns(1f);
-
-            player.PlayerInput = playerInput;
-
-            yield return new WaitForSeconds(1f);
-
-            float endingZPosition = playerObject.transform.position.z;
+            float startingZPosition = player.transform.position.z;
 
             //ACT
+            yield return new WaitForSeconds(0.5f);
+
+            float endingZPosition = player.transform.position.z;
+
+            //ASSERT
             Assert.Less(startingZPosition, endingZPosition);
 
         }
@@ -42,28 +32,17 @@ namespace a_player
         public IEnumerator moving_backwards()
         {
             //ARRANGE
-            var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            floor.transform.localScale = new Vector3(50, 0.1f, 50);
-            floor.transform.position = Vector3.zero;
-
-            var playerObject = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            playerObject.AddComponent<CharacterController>();
-            playerObject.transform.position = new Vector3(0, 1.10f, 0);
-
-            Player player = playerObject.AddComponent<Player>();
-
-            float startingZPosition = playerObject.transform.position.z;
-
-            var playerInput = Substitute.For<PlayerInput>();
-            playerInput.Vertical.Returns(-1f);
-
-            player.PlayerInput = playerInput;
-
-            yield return new WaitForSeconds(1f);
-
-            float endingZPosition = playerObject.transform.position.z;
+            TestHelper.CreateFloor();
+            var player = TestHelper.CreatePlayer();
+            player.PlayerInput.Vertical.Returns(-1f);
+            float startingZPosition = player.transform.position.z;
 
             //ACT
+            yield return new WaitForSeconds(0.5f);
+
+            float endingZPosition = player.transform.position.z;
+
+            //ASSERT
             Assert.Greater(startingZPosition, endingZPosition);
         }
 
@@ -71,28 +50,17 @@ namespace a_player
         public IEnumerator standing_still()
         {
             //ARRANGE
-            var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            floor.transform.localScale = new Vector3(50, 0.1f, 50);
-            floor.transform.position = Vector3.zero;
-
-            var playerObject = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            playerObject.AddComponent<CharacterController>();
-            playerObject.transform.position = new Vector3(0, 1.10f, 0);
-
-            Player player = playerObject.AddComponent<Player>();
-
-            float startingZPosition = playerObject.transform.position.z;
-
-            var playerInput = Substitute.For<PlayerInput>();
-            playerInput.Vertical.Returns(0);
-
-            player.PlayerInput = playerInput;
-
-            yield return new WaitForSeconds(0.5f);
-
-            float endingZPosition = playerObject.transform.position.z;
+            TestHelper.CreateFloor();
+            var player = TestHelper.CreatePlayer();
+            player.PlayerInput.Vertical.Returns(0);
+            float startingZPosition = player.transform.position.z;
 
             //ACT
+            yield return new WaitForSeconds(0.5f);
+
+            float endingZPosition = player.transform.position.z;
+
+            //ASSERT
             Assert.AreEqual(startingZPosition, endingZPosition);
 
         }

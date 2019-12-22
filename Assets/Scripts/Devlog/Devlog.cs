@@ -65,7 +65,50 @@ E deletar a classe MockPlayerInput.
 
 É importante notar que NSubstitute só funciona com propriedades e que utilizamos o var como tipagem da referência.
 
-25:00
+FACTORY PARA CLASSES DE TESTE
+
+Nas classes de testes é comum termos que testar diversos comportamentos nos mesmos objetos, como movimentação nos quatro sentidos de um player. 
+Para que não tenhamos que incluir toda a lógica de criação do objeto a cada método de teste, devemos utilizar o padrão factory e criar uma classe Helper que conterá essa lógica.
+Dessa forma, teremos métodos estáticos nessa classe que criam, por exemplo, o chão e o jogador dos nossos testes.
+Por serem métodos estáticos, não será necessária a instanciação dessas classes para criação desses objetos.
+
+SEPARAÇÃO DE CLASSES E SUAS RESPONSABILIDADES
+
+É normal ver novas funcionalidades serem adicionadas à uma classe já existente até que elas virem uma bagunça, ficando com mais responsabilidades do que deveriam.
+
+Olhando para a nossa classe Player, vemos que a lógica de movimentação no Update poderiam ser colocada em uma classe separada, exclusiva para movimentação.
+Além de dominuir as responsabilidades da classe player, outro ponto positivo dessa refatoração é poder criar um sistema de troca de formas de movimentação (teclado e mouse, controle, point and click...) de forma bem simples.
+Para isso usamos uma interface. A classe player terá uma referência à essa interface e as classes que representam as diferentes formas de movimentação implementarão essa interface.
+
+É importante notar que essa abordagem com a utilização de interface só é necessária se houver mais de uma forma de implementação do mecanismo. Caso contrário, basta criar uma classe.
+
+UPDATE
+Um ponto interessante é que essas classes não precisam extender Monobehaviour. A lógica que seria executada no Update pode ser colocada em uma função que será chamada no Update da classe container.
+Aqui foi usada a função Tick() para isso.
+
+INJEÇÃO DE CONSTRUTOR
+Essas classes auxiliares precisarão de informações da classe container. Para resolver isso, vamos passar a classe container dentro do contrutor e pegar ali as referências que precisaremos.
+Exemplo:
+
+public PlayerMoviment(Player player)
+   {
+       _player = player;
+       _characterController = player.GetComponent<CharacterController>();
+   }
+
+INTERFACES OU CLASSES
+A utilização de interfaces é importante quando temos diferentes tipos de implementação de uma mesma mecânica.
+Quando só visualizamos uma forma de implementação, o mais fácil é criar somente uma classe.
+
+É isso que fizemos com o PlayerRotator. O separamos da classe Player, seguindo o padrão humble, mas não criamos uma interface.
+
+
+
+
+
+
+
+
 
 
 

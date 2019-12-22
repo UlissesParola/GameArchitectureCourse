@@ -26,6 +26,8 @@ namespace a_player
                 // Use yield to skip a frame.
                 yield return null;
             }
+
+            GameObject.Destroy(cube);
         }
     }
 }

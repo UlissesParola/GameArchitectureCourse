@@ -1,24 +1,38 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Player : MonoBehaviour
 {
-    private CharacterController _characterController;
     public IPlayerInput PlayerInput;
+    private CharacterController _characterController;
+    private IPlayerMoviment _playerMoviment;
+    private PlayerRotator _playerRotator;
 
-    private void Awake() 
+    private void Awake()
     {
         _characterController = GetComponent<CharacterController>();
         PlayerInput = new PlayerInput();
+        _playerMoviment = new PlayerMoviment(this);
+        _playerRotator = new PlayerRotator(this);
     }
 
     // Update is called once per frame
     private void Update()
     {
-        Vector3 movementInput = new Vector3(PlayerInput.Horizontal, 0, PlayerInput.Vertical);
-        Vector3 movement = transform.rotation * movementInput;
-        _characterController.SimpleMove(movement);
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            _playerMoviment = new PlayerMoviment(this);
+            GetComponent<NavMeshAgent>().enabled = false;
+        }
 
+        if(Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            _playerMoviment = new NavmeshPlayerMoviment(this);
+        }
+
+        _playerMoviment.Tick();
+        _playerRotator.Tick();
     }
 }
