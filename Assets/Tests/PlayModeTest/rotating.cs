@@ -11,8 +11,8 @@ namespace a_player
         [UnityTest]
         public IEnumerator with_negative_mouse_X()
         {
-            TestHelper.CreateFloor();
-            var player = TestHelper.CreatePlayer();
+            yield return TestHelper.LoadTestScene();
+            var player = TestHelper.GetPlayer();
 
             var startingRotation = player.transform.rotation;
 

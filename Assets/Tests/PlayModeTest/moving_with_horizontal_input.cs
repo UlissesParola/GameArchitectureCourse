@@ -13,9 +13,9 @@ namespace a_player
         public IEnumerator moving_left()
         {
             //Arrange
-            TestHelper.CreateFloor();
+            yield return TestHelper.LoadTestScene();
 
-            var player = TestHelper.CreatePlayer();
+            var player = TestHelper.GetPlayer();
 
 
             player.PlayerInput.Horizontal.Returns(-1f);
@@ -35,9 +35,9 @@ namespace a_player
         public IEnumerator moving_right()
         {
             //Arrange
-            TestHelper.CreateFloor();
+            yield return TestHelper.LoadTestScene();
 
-            var player = TestHelper.CreatePlayer();
+            var player = TestHelper.GetPlayer();
 
 
             player.PlayerInput.Horizontal.Returns(1f);

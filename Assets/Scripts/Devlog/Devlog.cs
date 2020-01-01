@@ -96,11 +96,91 @@ public PlayerMoviment(Player player)
        _characterController = player.GetComponent<CharacterController>();
    }
 
-INTERFACES OU CLASSES
+ROTAÇÃO
 A utilização de interfaces é importante quando temos diferentes tipos de implementação de uma mesma mecânica.
 Quando só visualizamos uma forma de implementação, o mais fácil é criar somente uma classe.
 
 É isso que fizemos com o PlayerRotator. O separamos da classe Player, seguindo o padrão humble, mas não criamos uma interface.
+
+A classe Rotator recebe o player no construtor e tem o seguinte código na função Tick():
+
+public void Tick()
+    {
+        var rotation = new Vector3(0, _player.PlayerInput.MouseX, 0);
+        _player.transform.Rotate(rotation);
+    }
+
+Também tivemos que alterar IPlayerInput para que tivesse uma propriedade MouseX.
+
+Para calcular a rotação, afim de testa-la, utilizamos o seguinte código:
+
+    var crossProduct = Vector3.Cross(startingRotation * Vector3.forward, endingRotation * Vector3.forward);
+    var dotProduct = Vector3.Dot(crossProduct, Vector3.up);
+
+    return dotProduct;
+
+CENA DE TESTE
+Um dos problemas de criar o chão e o player em cada teste, é que corremos o risco dos players de testes diferentes serem criados no mesmo lugar e, por ação da física, terem seu posicionamento alterado, invalidando os testes.
+A solução para isso é a criação de uma cena exclusiva para testes e o reaproveitamento dos objetos criados.
+Vamos duplicar a cena que utilizamos até agora e renomeá-la para TestScene.
+
+Vamos aproveitar a função CreateFloor para carregar a cena. Vamos alterá-la e renomeá-la conforme abaixo:
+
+        public static IEnumerator LoadTestScene()
+        {
+            var operation = SceneManager.LoadSceneAsync("TestScene");
+            while(operation.isDone == false)
+            {
+                yield return null;
+            }
+        }
+
+Alguns detalhes: 
+Tivemos que alterar o tipo de retorno para IEnumarator, já que vamos querer carregar a cena de forma assíncrona.
+SceneManager.LoadSceneAsync retorna um AsyncOperation, o qual podemos pegar o estado do carregamento da cena.
+
+Outra coisa importante é avisar às funções que utilizarão a cena de que elas precisam esperar o seu carregamento.
+Fazemos isso colocando yield return antes da chamada da função LoadTestScene() em todos os lugares onde ela for chamada, como abaixo:
+
+    yield return TestHelper.LoadTestScene();
+
+O passo segunite é alterar a função CreatePlayer. Não queremos mais que um objeto Player seja criado a cada teste, mas que o Player em cena seja passado para os testes seguintes.
+A parte onde o PlayerInput é substituido continua valendo.
+A função fica como abaixo:
+
+        public static Player GetPlayer()
+        {
+            Player player = GameObject.FindObjectOfType<Player>();
+
+            var playerObjectInput = Substitute.For<IPlayerInput>();
+            player.PlayerInput = playerObjectInput;
+
+            return player;
+        }
+
+CAMERA
+Uma forma simples de criar uma câmera em primeira pessoa é arrastar a nossa câmera para dentro do objeto jogador e resetar o seu transform. Assim ela vai sempre acompanhar o player.
+
+INICIO ITENS E INVENTÁRIO
+Vamos criar uma estrutura simples de itens e inventário. Teremos duas classes: Item e Inventário, ambas herdando de Monobehaviour
+
+Item:
+Existem várias formas de se pegar itens em jogos, seja clicando nos objetos ou por aproximação. Para começar vamos utilizar a segunda opção.
+Dentro da Função OnTriggerEnter, vamos verificar se o item já foi coletado com uma variável booleana _wasPicked.
+Se o _wasPicked for falsa, vamos ver se o objeto de iniciou o gatilho possui um inventário, caso sim, chamaremos a função Pick() desse inventário e alteraremos a _wasPicked para true.
+
+Uma opção interessante aqui é marcar a opção de trigger no colisor através do código. Dessa forma há menos chance de esquecermos de marcá-la.
+Para isso vamos setar a propriedade isTrigger do collisor dentro da função OnValidate. 
+Também é interessante usar o [RequireComponent(typeof(Collider))] para que o objeto tenha sempre um colisor.
+
+Inventório:
+Como vamos adiocionar o inventário como um componente do nosso player, precisamos que ele herde de Monobehaviour
+A função Pick() vai adicionar o item à uma lista de itens. Também vai alterar o objeto pai do item para o ItemsContainer, que é um objeto filho do player.
+O ItemsContrainer será criado dentro da função Awake do Inventário com new GameObject.
+
+
+
+
 
 
 

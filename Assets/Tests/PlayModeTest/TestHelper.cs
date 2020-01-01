@@ -1,25 +1,25 @@
 ﻿using UnityEngine;
 using NSubstitute;
 using System;
+using System.Collections;
+using UnityEngine.SceneManagement;
 
 namespace a_player
 {
     public class TestHelper
     {
-        public static void CreateFloor()
+        public static IEnumerator LoadTestScene()
         {
-            var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            floor.transform.localScale = new Vector3(50, 0.1f, 50);
-            floor.transform.position = Vector3.zero;
+            var operation = SceneManager.LoadSceneAsync("TestScene");
+            while(operation.isDone == false)
+            {
+                yield return null;
+            }
         }
 
-        public static Player CreatePlayer()
+        public static Player GetPlayer()
         {
-            var playerObject = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            playerObject.transform.position = new Vector3(0, 1.30f, 0);
-            playerObject.AddComponent<CharacterController>();
-
-            Player player = playerObject.AddComponent<Player>();
+            Player player = GameObject.FindObjectOfType<Player>();
 
             var playerObjectInput = Substitute.For<IPlayerInput>();
             player.PlayerInput = playerObjectInput;

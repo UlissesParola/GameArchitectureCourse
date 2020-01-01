@@ -12,8 +12,8 @@ namespace a_player
         public IEnumerator moving_forward()
         {
             //ARRANGE
-            TestHelper.CreateFloor();
-            var player = TestHelper.CreatePlayer();
+            yield return TestHelper.LoadTestScene();
+            var player = TestHelper.GetPlayer();
             player.PlayerInput.Vertical.Returns(1f);
 
             float startingZPosition = player.transform.position.z;
@@ -32,8 +32,8 @@ namespace a_player
         public IEnumerator moving_backwards()
         {
             //ARRANGE
-            TestHelper.CreateFloor();
-            var player = TestHelper.CreatePlayer();
+            yield return TestHelper.LoadTestScene();
+            var player = TestHelper.GetPlayer();
             player.PlayerInput.Vertical.Returns(-1f);
             float startingZPosition = player.transform.position.z;
 
@@ -50,8 +50,8 @@ namespace a_player
         public IEnumerator standing_still()
         {
             //ARRANGE
-            TestHelper.CreateFloor();
-            var player = TestHelper.CreatePlayer();
+            yield return TestHelper.LoadTestScene();
+            var player = TestHelper.GetPlayer();
             player.PlayerInput.Vertical.Returns(0);
             float startingZPosition = player.transform.position.z;
 
