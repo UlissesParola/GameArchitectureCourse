@@ -20,12 +20,10 @@ ASSERT - Onde é realizada a comparação entre o resultado obtido e o esperado.
 Quando o teste não for instatâneo requerer um intervalo de tempo para ser realizado, o tipo de retorno do método será IEnumerable e será utilizado entre as ações:
 yield return new WaitForSerconds(segundos);
 */
-
 #endregion
 
 #region HUMBLE OBJECT PATTERN
 /*
-
 Classes que implementem MonoBehaviour são mais complicadas de testar. Uma opção é a utilização do padrão Humble Object, explicado aqui:
 https://blogs.unity3d.com/pt/2014/06/03/unit-testing-part-2-unit-testing-monobehaviours/
 e resumido aqui:
@@ -46,9 +44,11 @@ A classe Player teria uma referência para uma classe que implementasse essa int
 Assim, no teste bastaria criar uma nova classe implementando IPlayerInput que retornasse os valores necessários ao teste.
 
 O problema dessa abordagem é que teríamos que criar uma classe de teste para cada classe que quisessemos testar. Quanto maior fica o código, mas complicado fica manter essa prática.
+*/
+#endregion
 
-NSUBSTITUTE
-
+#region  NSUBSTITUTE
+/*
 Pode ser baixado ou clonado no github:
 https://github.com/nsubstitute/NSubstitute
 
@@ -71,16 +71,20 @@ playerInput.Vertical.Returns(1f);
 E deletar a classe MockPlayerInput.
 
 É importante notar que NSubstitute só funciona com propriedades e que utilizamos o var como tipagem da referência.
+*/
+#endregion
 
-FACTORY PARA CLASSES DE TESTE
-
+#region FACTORY PARA CLASSES DE TESTE
+/*
 Nas classes de testes é comum termos que testar diversos comportamentos nos mesmos objetos, como movimentação nos quatro sentidos de um player. 
 Para que não tenhamos que incluir toda a lógica de criação do objeto a cada método de teste, devemos utilizar o padrão factory e criar uma classe Helper que conterá essa lógica.
 Dessa forma, teremos métodos estáticos nessa classe que criam, por exemplo, o chão e o jogador dos nossos testes.
 Por serem métodos estáticos, não será necessária a instanciação dessas classes para criação desses objetos.
+*/
+#endregion
 
-SEPARAÇÃO DE CLASSES E SUAS RESPONSABILIDADES
-
+#region SEPARAÇÃO DE CLASSES E SUAS RESPONSABILIDADES
+/*
 É normal ver novas funcionalidades serem adicionadas à uma classe já existente até que elas virem uma bagunça, ficando com mais responsabilidades do que deveriam.
 
 Olhando para a nossa classe Player, vemos que a lógica de movimentação no Update poderiam ser colocada em uma classe separada, exclusiva para movimentação.
@@ -88,12 +92,18 @@ Além de dominuir as responsabilidades da classe player, outro ponto positivo de
 Para isso usamos uma interface. A classe player terá uma referência à essa interface e as classes que representam as diferentes formas de movimentação implementarão essa interface.
 
 É importante notar que essa abordagem com a utilização de interface só é necessária se houver mais de uma forma de implementação do mecanismo. Caso contrário, basta criar uma classe.
+*/
+#endregion
 
-UPDATE
+#region UPDATE
+/*
 Um ponto interessante é que essas classes não precisam extender Monobehaviour. A lógica que seria executada no Update pode ser colocada em uma função que será chamada no Update da classe container.
 Aqui foi usada a função Tick() para isso.
+*/
+#endregion
 
-INJEÇÃO DE CONSTRUTOR
+#region INJEÇÃO DE CONSTRUTOR
+/*
 Essas classes auxiliares precisarão de informações da classe container. Para resolver isso, vamos passar a classe container dentro do contrutor e pegar ali as referências que precisaremos.
 Exemplo:
 
@@ -102,8 +112,11 @@ public PlayerMoviment(Player player)
        _player = player;
        _characterController = player.GetComponent<CharacterController>();
    }
+*/
+#endregion
 
-ROTAÇÃO
+#region ROTAÇÃO
+/*
 A utilização de interfaces é importante quando temos diferentes tipos de implementação de uma mesma mecânica.
 Quando só visualizamos uma forma de implementação, o mais fácil é criar somente uma classe.
 
@@ -125,8 +138,11 @@ Para calcular a rotação, afim de testa-la, utilizamos o seguinte código:
     var dotProduct = Vector3.Dot(crossProduct, Vector3.up);
 
     return dotProduct;
+*/
+#endregion
 
-CENA DE TESTE
+#region CENA DE TESTE
+/*
 Um dos problemas de criar o chão e o player em cada teste, é que corremos o risco dos players de testes diferentes serem criados no mesmo lugar e, por ação da física, terem seu posicionamento alterado, invalidando os testes.
 A solução para isso é a criação de uma cena exclusiva para testes e o reaproveitamento dos objetos criados.
 Vamos duplicar a cena que utilizamos até agora e renomeá-la para TestScene.
@@ -164,11 +180,17 @@ A função fica como abaixo:
 
             return player;
         }
+*/
+#endregion
 
-CAMERA
+#region CAMERA
+/*
 Uma forma simples de criar uma câmera em primeira pessoa é arrastar a nossa câmera para dentro do objeto jogador e resetar o seu transform. Assim ela vai sempre acompanhar o player.
+*/
+#endregion
 
-INICIO ITENS E INVENTÁRIO
+#region INICIO ITENS E INVENTÁRIO
+/*
 Vamos criar uma estrutura simples de itens e inventário. Teremos duas classes: Item e Inventário, ambas herdando de Monobehaviour
 
 Item:
@@ -184,8 +206,11 @@ Inventório:
 Como vamos adiocionar o inventário como um componente do nosso player, precisamos que ele herde de Monobehaviour
 A função Pick() vai adicionar o item à uma lista de itens. Também vai alterar o objeto pai do item para o ItemsContainer, que é um objeto filho do player.
 O ItemsContrainer será criado dentro da função Awake do Inventário com new GameObject.
+*/
+#endregion
 
-IMPORTAÇÃO DE MODELO E TEXTURAS
+#region IMPORTAÇÃO DE MODELO E TEXTURAS
+/*
 No nosso caso temos um modelo de uma shotgun, que possui as seguintes texturas: Albedo Transparency, Emission, Metallic Smoothness e Normal.
 Temos duas formas de criar o material para esse modelo. Uma é criando primeiro o material e depois colocando as texturas nos campos.
 A outra é arrastando uma das texturas para o modelo já em cena. Isso cria automáticamente o material, mas nós ainda temos que colocar o restante das texturas nos campos corretos.
@@ -195,8 +220,11 @@ Pode acontecer do modelo ser composto por várias partes, e o material só estar
 Para corrigir isso, basta selecionar todas as partes e arrastar o material para o campo Material->Element no inspector.
 
 Outras coisa interessante é criar um GameObject para ser o container do modelo, serparando, assim, arte e lógica do objeto.
+*/
+#endregion
 
 #region EQUIPANDO ITEM
+/*
 Atualmente quando coletamos um item ele ele fica colado ao jogador. Esse não é o comportamento que desejamos.
 Como estamos lidando inicialmente só com armas, o comportamento esperado é que o item seja equipado na mão direita do personagem.
 Para isso vamos criar um novo objeto chamado Right Hand como filho do player e posicioná-lo de forma que em jogo as armas parecam estarem sendo seguradas pelo jogador.
@@ -212,11 +240,15 @@ Na função de equipar, além de setar o item coletado como equipado, temos que 
     }
 
 EquipedItem é uma propriedade com get public e set privado.
+*/
+#endregion
 
 #region GIT
+/*
 Link com dicas para preparar o projeto para uso com GIT
 https://thoughtbot.com/blog/how-to-git-with-unity
-
+*/
+#endregion
 
 
 
