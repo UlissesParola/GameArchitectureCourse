@@ -1,5 +1,6 @@
-﻿/*
-Test Runner
+﻿
+#region TEST RUNNER
+/*
 A janela do Teste Runner fica em Window -> General -> Test Runner.
 Test Runner vamos ter duas opções PlayMode e Edit Mode
 PlayMode são os testes que serão realizados com o jogo rodando, normalmente testes de física, movimentação e coisas do tipo
@@ -18,8 +19,12 @@ ASSERT - Onde é realizada a comparação entre o resultado obtido e o esperado.
 
 Quando o teste não for instatâneo requerer um intervalo de tempo para ser realizado, o tipo de retorno do método será IEnumerable e será utilizado entre as ações:
 yield return new WaitForSerconds(segundos);
+*/
 
-HUMBLE OBJECT PATTERN
+#endregion
+
+#region HUMBLE OBJECT PATTERN
+/*
 
 Classes que implementem MonoBehaviour são mais complicadas de testar. Uma opção é a utilização do padrão Humble Object, explicado aqui:
 https://blogs.unity3d.com/pt/2014/06/03/unit-testing-part-2-unit-testing-monobehaviours/
@@ -31,9 +36,11 @@ A ideia é a classe ser só o envelope, delegando a maior parte da lógica para 
 Um exemplo seria uma classe Player que realizasse a movimentação do personagem a partir de um input do jogador.
 Ela poderia ter um método GetInput(), onde seria lido o input do jogador e então realizada a lógica de movimentação.
 O problema é que no teste seria difícil receber esse input sem criar gambiarras, quebrando encpsulamento e outras boas práticas.
+*/
+#endregion
 
-INTERFACES
-
+#region INTERFACES
+/*
 Uma solução é a criação de uma interface IPlayerInput que teria propriedades de leitura Vertical e Horizontal.
 A classe Player teria uma referência para uma classe que implementasse essa interface e utilizaria os valores retornados por Vertical e Horizontal para realizar a movimentação.
 Assim, no teste bastaria criar uma nova classe implementando IPlayerInput que retornasse os valores necessários ao teste.
@@ -189,7 +196,7 @@ Para corrigir isso, basta selecionar todas as partes e arrastar o material para 
 
 Outras coisa interessante é criar um GameObject para ser o container do modelo, serparando, assim, arte e lógica do objeto.
 
-EQUIPANDO ITEM
+#region EQUIPANDO ITEM
 Atualmente quando coletamos um item ele ele fica colado ao jogador. Esse não é o comportamento que desejamos.
 Como estamos lidando inicialmente só com armas, o comportamento esperado é que o item seja equipado na mão direita do personagem.
 Para isso vamos criar um novo objeto chamado Right Hand como filho do player e posicioná-lo de forma que em jogo as armas parecam estarem sendo seguradas pelo jogador.
@@ -205,6 +212,10 @@ Na função de equipar, além de setar o item coletado como equipado, temos que 
     }
 
 EquipedItem é uma propriedade com get public e set privado.
+
+#region GIT
+Link com dicas para preparar o projeto para uso com GIT
+https://thoughtbot.com/blog/how-to-git-with-unity
 
 
 
