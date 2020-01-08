@@ -7,6 +7,9 @@ public class Inventory: MonoBehaviour
 {
     private List<Item> _items;
     private Transform _itemsContainer;
+    [SerializeField] private Transform _rightHand;
+
+    public Item EquipedItem { get; private set; }
 
     private void Awake()
     {
@@ -26,5 +29,9 @@ public class Inventory: MonoBehaviour
     private void Equip(Item item)
     {
         Debug.LogError($"Equipped item: {item.gameObject.name}");
+        EquipedItem = item;
+        EquipedItem.transform.SetParent(_rightHand);
+        EquipedItem.transform.localPosition = Vector3.zero;
+        EquipedItem.transform.localRotation = Quaternion.identity;
     }
 }

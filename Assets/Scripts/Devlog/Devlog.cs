@@ -178,6 +178,36 @@ Como vamos adiocionar o inventário como um componente do nosso player, precisam
 A função Pick() vai adicionar o item à uma lista de itens. Também vai alterar o objeto pai do item para o ItemsContainer, que é um objeto filho do player.
 O ItemsContrainer será criado dentro da função Awake do Inventário com new GameObject.
 
+IMPORTAÇÃO DE MODELO E TEXTURAS
+No nosso caso temos um modelo de uma shotgun, que possui as seguintes texturas: Albedo Transparency, Emission, Metallic Smoothness e Normal.
+Temos duas formas de criar o material para esse modelo. Uma é criando primeiro o material e depois colocando as texturas nos campos.
+A outra é arrastando uma das texturas para o modelo já em cena. Isso cria automáticamente o material, mas nós ainda temos que colocar o restante das texturas nos campos corretos.
+Para colocar as texturas restantes, é só arrastá-las para os seus campos dentro do inspector do material.
+
+Pode acontecer do modelo ser composto por várias partes, e o material só estar em umas delas.
+Para corrigir isso, basta selecionar todas as partes e arrastar o material para o campo Material->Element no inspector.
+
+Outras coisa interessante é criar um GameObject para ser o container do modelo, serparando, assim, arte e lógica do objeto.
+
+EQUIPANDO ITEM
+Atualmente quando coletamos um item ele ele fica colado ao jogador. Esse não é o comportamento que desejamos.
+Como estamos lidando inicialmente só com armas, o comportamento esperado é que o item seja equipado na mão direita do personagem.
+Para isso vamos criar um novo objeto chamado Right Hand como filho do player e posicioná-lo de forma que em jogo as armas parecam estarem sendo seguradas pelo jogador.
+Para facilitar o posicionamento visualmente, podemos criar um cubo e colocá-lo como filho de Right Hand. Também podemos utilizar o modelo da Shotgun para isso.
+
+Na função de equipar, além de setar o item coletado como equipado, temos que resetar seu LocalPosition e LocalRotation, ficando como abaixo:
+    private void Equip(Item item)
+    {
+        EquipedItem = item;
+        EquipedItem.transform.SetParent(_rightHand);
+        EquipedItem.transform.localPosition = Vector3.zero;
+        EquipedItem.transform.localRotation = Quaternion.identity;
+    }
+
+EquipedItem é uma propriedade com get public e set privado.
+
+
+
 
 
 
