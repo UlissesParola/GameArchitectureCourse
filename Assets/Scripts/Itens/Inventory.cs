@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 
 public class Inventory: MonoBehaviour
 {
+    public event Action<Item> OnActiveItemChanged;
+
     private List<Item> _items;
     private Transform _itemsContainer;
     [SerializeField] private Transform _rightHand;
+    
 
     public Item EquipedItem { get; private set; }
 
@@ -33,5 +37,15 @@ public class Inventory: MonoBehaviour
         EquipedItem.transform.SetParent(_rightHand);
         EquipedItem.transform.localPosition = Vector3.zero;
         EquipedItem.transform.localRotation = Quaternion.identity;
+
+        OnActiveItemChanged?.Invoke(item);
+        /*
+        É o mesmo que: 
+        if (ActiveItemChanged != null)
+        {
+            ActiveItemChanged(EquipedItem);
+        }
+        */
+
     }
 }

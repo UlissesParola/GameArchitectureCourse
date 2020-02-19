@@ -115,12 +115,14 @@ public PlayerMoviment(Player player)
 */
 #endregion
 
-#region ROTAÇÃO
+#region ROTAÇÃO DO PERSONAGEM
 /*
 A utilização de interfaces é importante quando temos diferentes tipos de implementação de uma mesma mecânica.
 Quando só visualizamos uma forma de implementação, o mais fácil é criar somente uma classe.
 
 É isso que fizemos com o PlayerRotator. O separamos da classe Player, seguindo o padrão humble, mas não criamos uma interface.
+
+Rotação horizontal:
 
 A classe Rotator recebe o player no construtor e tem o seguinte código na função Tick():
 
@@ -132,12 +134,30 @@ public void Tick()
 
 Também tivemos que alterar IPlayerInput para que tivesse uma propriedade MouseX.
 
-Para calcular a rotação, afim de testa-la, utilizamos o seguinte código:
+Para calcular a rotação horizontal, afim de testa-la, utilizamos o seguinte código:
 
     var crossProduct = Vector3.Cross(startingRotation * Vector3.forward, endingRotation * Vector3.forward);
     var dotProduct = Vector3.Dot(crossProduct, Vector3.up);
 
     return dotProduct;
+
+Rotação vertical:
+Enquanto a rotação horizontal é uma rotação do objeto do personagem, a rotação vertical só rotaciona a câmera.
+Por esse motivo a abordagem escolhida no curso foi criar uma classe CameraController para realizar essa rotação.
+Por uma questão de consistência, resolvi deixá-la dentro de PlayerRotator.
+Vamos ter que fazer a adição do MouseY tanto no IPlayerInput, quanto no PlayerInput, aos moldes do que já foi feito com o MouseX.
+No método Tick do PlayerRotator vamos incluir:
+
+        _tilt = Mathf.Clamp(_tilt - _player.PlayerInput.MouseY, -_tiltRange, _tiltRange);
+        Camera.main.transform.localRotation = Quaternion.Euler(_tilt, 0f, 0f);
+
+A primeira linha limita a rotação vertical de acordo com o _tiltRange, que pode ser serializado para ser alterado no inspector.
+Nós subtraímos o valor do MouseY para que nossa rotação não seja invertida. Funciona como uma câmera de auditório, você precisa abaixar a parte de trás da câmera para que ela aponte para cima.
+Vamos guardar essa informação em uma variável _tilt para que a rotação seja acumulada entre os frames.
+
+Na segunda linha estamos rotacionando a câmera. Quaternion.Euler retorna uma rotação com base em graus.
+Detalhe que pegamos a posição Y do mouse, mas estamos rotacionando o eixo X da câmera. 
+
 */
 #endregion
 
@@ -250,25 +270,264 @@ https://thoughtbot.com/blog/how-to-git-with-unity
 */
 #endregion
 
+#region CLASSE ABSTRATA
+/*
+Assim como interfaces, não podem ser instanciadas diretamente.
+É indicada quando há compartilhamento de uma mesma funcionalidade entre classes do mesmo tipo e essa funcionalidade não irá mudar entre elas. 
+Uma classe abstrata pode herdar outra classe abstrata ou implementar outras interfaces, mas uma classe só pode herdar uma classe abstrata.
+As variaveis e propriedades de uma classe abstrata devem ser protected para que possam ser herdadas pelas classes filhas.
 
+Uma classe abstrata pode ter métodos abstratos, que não possuem implementação e funcionam como as assinaturas de métodos das interfaces. Esse método deverá ser implementado nas classes filhas.
 
+    public abstract void MetodoAbstrato(); 
 
+Classes abstratas também podem ter métodos normais, que serão também herdados pelas classes filhas.
+Caso queiramos que a implementação de um método seja alterado por uma classe filha, devemos incluir virtual à sua assinatura.
 
+    public virtual void MetodoQuePodeSerSobrescrito()
+    {
+        implementação
+    }
 
+Em ambos os casos, quando vamos implementar um método abstrato ou alterar um método virtual, devemos utilizar a assinatura override antes do nome do método que queremos utilizar.
+    
+    public override void MetodoQuePodeSerSobrescrito()
+    {
+        implementação
+    }
 
+ */
+#endregion
 
+#region ITENS USÁVEIS 
+/*
+ITEMCOMPONENT
+Nesse projeto vamos usar classes abstratas para melhorar a reusabilidade dos itens. A ideia é criar uma classe abstrata ItemComponent, da qual herdarão os diversos tipos de itens. 
+Essa classe vai herdar de Monobehavior para que seus filhos possam ser componentes e aparecerem no inspector.
+Ela vai ter um método abstrato Use(), que terá a implementação de uso nas classes filhas e uma propriedade booleana pública CanUse que irá informar se o item pode ser usado naquele momento. Ela tem a função de dar um delay entre os usos do item.
 
+    public bool CanUse => Time.time >= _timeNextUse;
 
+Um exemplo de classe que herda de ItemComponent é ItemLogger. Sua única função é escrever no console quando o item for usado. Para isso basta implementar o método abstrato Use como abaixo:
+    
+    public override void Use()
+    {
+        Debug.Log("Item Used");
+    }
 
+USEACTION
+Um item pode ter mais de um tipo diferente de uso. Uma arma, por exemplo, pode ter um tiro simples e um carregado, cada um representado por um ItemComponent diferente.
+Vamos querer mapear esses usos para teclas diferentes. 
 
+Para isso vamos criar um Struct UseAction. A escolha do Struct é por ser uma estrutura mais simples e que fica armazenada no stack e não no heap, não gerando garbage.
+Ele terá a seguinte implementação:
 
+    using System;
 
+    [Serializable]
+    public struct UseAction
+    {
+        public UseMode useMode;
+        public ItemComponent TargetComponent;
+    }
 
+O [Seriazable] é para que o UseAction seja visualizada no inpector. 
+UseMode é uma referencia para um Enun UseMode contendo os diversos comandos que podem chamar o uso do Item, como "RightClick" e "LeftClick".
+TargetComponent é o componente que será vinculado ao comando selecionado.
 
+Dessa forma, podemos escolher no inspector o comando e o componente que ele irá chamar.
 
+Na classe Item vamos adicionar um array de UseAction, assim será possível definir no item quantas ações diferentes ele poderá ter, quais os comandos que irão chamá-las e quais os ItemComponent que serão utilizados.
 
+    [SerializeField] private UseAction[] _actions;
+    public UseAction[] Actions => _actions;
 
+INVENTORYUSE
+A classe InventoryUse será a responsável pelo uso dos itens. Dessa forma não sobrecarregamos as classes Inventory ou Player com essa responsabilidade.
+Ela terá uma referência para Inventory, que será cacheada no Awake.
 
+Uma função privada WasPressed vai verificar se o comando vinculado à ação foi chamado naquele momento e retornará true se tiver sido.
+Por exemplo, vamos supor que seja passado o UseMode "LeftClick" para o método. No Switch ele irá verificar se o Input.GetMouseButtonDown(0) foi chamado naquele frame e retornar true ou false dependendo do resultado.
 
+    private bool WasPressed(UseMode useMode)
+    {
+        switch(useMode)
+        {
+            case UseMode.LeftClick: return Input.GetMouseButtonDown(0);
+            case UseMode.RightClick: return Input.GetMouseButtonDown(1);
+            default: return false;
+                    
+        }
 
+No Update ela irá verificar se o EquipedItem do inventário possui um item. Caso sim, iniciará o seguinte laço:
+
+    foreach (var useAction in  _inventory.EquipedItem.Actions)
+    {
+        if (useAction.TargetComponent.CanUse && WasPressed(useAction.useMode))
+        {
+            useAction.TargetComponent.Use();
+        }
+    }
+
+Aqui serão percorridas todas as ações mapeadas para o objeto equipado. Para cada ação existente, será verificada se ele pode ser usada naquele momento e se o UseMode vinculado àquela ação foi acionado.
+Então será chamado o método Use().
+ */
+#endregion
+
+#region ITEM RAYCASTER
+/*
+Esse ItemComponent tem a função de tiro. Ele utiliza o Raycast para verificar se algum alvo foi acertado ou não e retornar o q foi atingido.
+Ele vai herdar de ItemComponent e a sua implementação vai se dar basicamente dentro do método Use. 
+A primeira coisa é definir um delay, que vai impedir o spam do tiro:
+
+    _timeNextUse = Time.time + _delay;
+
+Assim, a cada tiro será somado um tempo  de intervalo para q o tiro possa ser utilizado de novo. A variável _delay será privada, mas [SerializeField], para que possa ser definida no inspector.
+
+Vamos querer que o nosso raio saia da câmera e vá em direção ao meio da tela. Para pegar a coordenada do meio da tela, vamos usar:
+
+    Ray ray = Camera.main.ViewportPointToRay(Vector3.one / 2);
+
+Esse método retorna um raio e mapeia a tela de forma normalizada, com o canto inferior esquerdo sendo (0,0) e o canto superior direito (1,1). A coordenada Z é ignorada.
+Como queremos o meio, utilizamos o Vector3.one / 2. Uma outra alternativa era utilizar um new Vector3(0,5f, 0, 0.5f) que teria o mesmo resultado. Mais informações sobre o método no link:
+https://docs.unity3d.com/ScriptReference/Camera.ViewportPointToRay.html
+
+Em seguida vamos lançar o raio e pegar a quantidade de contatos:
+
+    int hits = Physics.RaycastNonAlloc(ray, _results, _range, _layerMask, QueryTriggerInteraction.Collide);
+
+hits recebe a quantidade de objetos que foram tocados pelo raio.
+RaycastNonAlloc é melhor explicado no link: https://docs.unity3d.com/ScriptReference/Physics.RaycastNonAlloc.html 
+De forma resumida, ele é como o RaycastAll, mas utiliza o _results como buffer para o resultado, não gerando um novo array a cada chamada.
+Vamos definir variáveis privadas para _result, _layerMask e _range.
+Vamos inicializar a _result diretamente na sua declaração
+
+    private RaycastHit[] _results = new RaycastHit[100];
+
+_layerMask vai ser atribuída no awake:
+
+    _layerMask = LayerMask.GetMask("Default");
+
+_range vai ser serializable para que possa ser definida no inspector.
+
+Por último vamos identificar qual foi o hit mais próximo:
+
+        double nearestDistance = double.MaxValue;
+        RaycastHit nearestHit = new RaycastHit();
+
+        for (int i = 0; i < hits; i++)
+        {
+            double distance = _results[i].distance;
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearestHit = _results[i];
+            }
+        }
+
+Vale destacar que RaycastHit é um struct e não pode ser nulo.
+
+O passo seguinte é realizar a lógica do acerto do tiro.
+
+ */
+#endregion
+
+#region CENA DE UI
+/*
+É possível ter mais de uma cena aberta ao mesmo tempo na Unity.
+Dessa forma, vamos criar uma cena especialmente para UI e adicioná-la dentro das outras cenas.
+Com isso não é mais necessário fazer um grande Prefab contendo toda a UI, mas trabalhar dentro da cena de UI de forma normal, com vários Prefabs.
+A primeira coisa é criar uma nova cena e nomeá-la de UI. Vamos deixar somente a câmera dentro dessa cena.
+
+Nas propriedades da UI Camera vamos mudar:
+Tag -> De MainCamera para nenhuma. Só pode haver uma ativa e essa será aquela que está dentro do player.
+Nome -> renomear para UI Camera.
+Clear Flags -> para Don't clear.
+Culling Mask -> selecionar somente UI.
+
+Na Main Camera vamos alterar:
+Culling Mask -> selecionar todos menos UI.
+
+Vamos também excluir o Audio Listener da nossa UI Camera.
+
+Agora é só arastar a cena de UI para dentro da cena principal.
+
+Uma coisa a se observar é qual cena está marcada como ativa, ou seja, principal. Queremos que a cena do level, e não do UI, seja a ativa.
+Temos que ter cuidado também quando formos adicionar os elementos de Ui para que estejam na cena correta.
+ */
+#endregion
+
+#region CROSSHAIR, EVENTOS E SCRIPTABLEOBJECT
+/*
+Queremos colocar um crosshair no jogo. Para isso vamos adicionar uma imagem na cena de UI e centralizá-la com a tela. 
+Existem vários pacotes de imagens de crosshair grátis na internet, basta baixar um.
+
+Podemos querer ter imagens do crosshair diferentes dependendo do contexto, como crosshair diferentes para armars diferentes.
+Existem várias formas de se fazer isso.
+Vamos criar um script Crosshair e adicioná-lo no objeto Crosshair que criamos na UI.
+
+A primeira coisa é criar uma referência para a imagem no objeto.
+Podemos ter também uma referência para o inventário, que será utilizado para fazer a assinatura no evento OnActiveItemChanged. 
+Como essa assinatura só ocorre na OnEnable, também podemos decidir por não guardar essa referência.
+Teremos que ter, então, referências para todas as imagens de crosshair que podem ser utilizadas.
+
+No OnEnable vamos assinar o evento de troca de item equipado:
+    _inventory.OnActiveItemChanged += HandleActiveItemChanged;
+
+E vamos definir a imagem de crosshair que será utilizada:
+        if (_inventory.EquipedItem != null)
+        {
+            _crosshairImage = _invalidSprite;
+        }
+        else
+        {
+            HandleActiveItemChanged(_inventory.EquipedItem);
+        }
+
+O OnActiveItemChanged é um evento definido no Inventário que recebe como parâmetro o item que foi equipado.
+Mais informações sobre eventos e delegates nos vídeos:
+https://www.youtube.com/watch?v=OuZrhykVytg
+https://www.youtube.com/watch?v=G5R4C8BLEOc
+https://www.youtube.com/watch?v=TdiN18PR4zk
+
+Para cada tipo de crosshair, teremos uma entrada em um enum chamado CrosshairMode. Uma referência para CrosshairMode será colocado em Item.
+
+O método HandleActiveItemChanged recebe um item e ativa a imagem correspondente ao crosshairMode dele: 
+
+    private void HandleActiveItemChanged(Item item)
+    {
+        switch (item.crosshairMode)
+        {
+            case CrosshairMode.Invalid: _crosshairImage = _gunSprite;
+                break;
+            case CrosshairMode.Gun: _crosshairImage = _invalidSprite;
+                break;
+            default: _crosshairImage = _invalidSprite;
+                break;
+        }
+    }
 */
+#endregion
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

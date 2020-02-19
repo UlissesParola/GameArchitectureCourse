@@ -7,6 +7,11 @@ public class Item : MonoBehaviour
 {
     private bool _wasPickedUp;
 
+    [SerializeField] private CrosshairDefinition _crosshairDefinition;
+    [SerializeField] private UseAction[] _actions;
+    public UseAction[] Actions => _actions;
+    public CrosshairDefinition CrosshairDefinition => _crosshairDefinition;
+
     private void OnTriggerEnter(Collider other)
     {
         if (_wasPickedUp)
