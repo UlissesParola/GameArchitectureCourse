@@ -8,9 +8,24 @@ namespace a_player
 {
     public class TestHelper
     {
-        public static IEnumerator LoadTestScene()
+        public static IEnumerator LoadMovementTestScene()
         {
-            var operation = SceneManager.LoadSceneAsync("TestScene");
+            var operation = SceneManager.LoadSceneAsync("Scenes/Test Scene/MovementTestScene");
+            while(operation.isDone == false)
+            {
+                yield return null;
+            }
+        }
+        
+        public static IEnumerator LoadItemTestScene()
+        {
+            var operation = SceneManager.LoadSceneAsync("Scenes/Test Scene/ItemTestScene");
+            while(operation.isDone == false)
+            {
+                yield return null;
+            }
+            
+            operation = SceneManager.LoadSceneAsync("UI", LoadSceneMode.Additive);
             while(operation.isDone == false)
             {
                 yield return null;

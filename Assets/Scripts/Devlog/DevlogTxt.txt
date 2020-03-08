@@ -544,56 +544,7 @@ Os atributos de imagem como _gunSprite podem ser deletados.
 
 Agora é só criar os CrosshairDifinition no projeto, adicionar a imagem que quisermos e incluí-los nos objetos diretamente no Inspector.
 
-
-TESTE
-Para testar o nosso sistema de alteração de crosshair vamos criar uma nova cena. 
-Ela será uma cópia da cena de teste de movimento e iremos adicionar um prefab do Player e um de um item, nesse caso da shotgun.
-O importante de usar os prefabs é que eles serão atualizados automaticamente quando fizermos alterações.
-
-Na classe TestHelper, vamos adicionar mais um método estático para carregar essa cena:
-
-        public static IEnumerator LoadItemTestScene()
-        {
-            var operation = SceneManager.LoadSceneAsync("Scenes/Test Scene/ItemTestScene");
-            while(operation.isDone == false)
-            {
-                yield return null;
-            }
-            
-            operation = SceneManager.LoadSceneAsync("UI", LoadSceneMode.Additive);
-            while(operation.isDone == false)
-            {
-                yield return null;
-            }
-        }
-        
-A diferença do método de carregamento de cena anterior fica por conta do parâmetro LoadSceneMode.Additive, que irá adicionar a cena de UI à cena de teste já carregada.
-
-À uma classe ui_test, vamos adicionar o seguinte método, que irá testar a alteração crosshair:
-
-        [UnityTest]
-        public IEnumerator change_crosshair()
-        {
-            yield return TestHelper.LoadItemTestScene();
-            var player = TestHelper.GetPlayer();
-            Crosshair crosshair = GameObject.FindObjectOfType<Crosshair>();
-            
-            Item item = GameObject.FindObjectOfType<Item>();
-            
-            Assert.AreNotSame(item.CrosshairDefinition.Sprite, crosshair.GetComponent<Image>().sprite);
-            
-            item.transform.position = player.transform.position;
-
-            yield return null;
-
-            Assert.AreSame(item.CrosshairDefinition.Sprite, crosshair.GetComponent<Image>().sprite);
-        }
-
-Uma alteração importante nesse método, comparado com os anteriores, foi exclusão da movimentação do player.
-Nesse nós movemos o item direto para a posição do player e esperamos um frame, o que representa um ganho de velocidade no teste:
-
-            item.transform.position = player.transform.position;
-            yield return null;
+Para testar o nosso sistema de alteração de crosshair
 
 */
 #endregion

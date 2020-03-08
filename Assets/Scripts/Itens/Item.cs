@@ -9,8 +9,10 @@ public class Item : MonoBehaviour
 
     [SerializeField] private CrosshairDefinition _crosshairDefinition;
     [SerializeField] private UseAction[] _actions;
+    [SerializeField] private Sprite _icon;
     public UseAction[] Actions => _actions;
     public CrosshairDefinition CrosshairDefinition => _crosshairDefinition;
+    public Sprite Icon => _icon;
 
     private void OnTriggerEnter(Collider other)
     {

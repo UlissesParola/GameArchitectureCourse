@@ -6,6 +6,7 @@ using UnityEngine.Events;
 
 public class Inventory: MonoBehaviour
 {
+    public event Action<Item> OnItemPickedUp;
     public event Action<Item> OnActiveItemChanged;
 
     private List<Item> _items;
@@ -26,13 +27,14 @@ public class Inventory: MonoBehaviour
     public void PickUp(Item item)
     {
         _items.Add(item);
+        OnItemPickedUp?.Invoke(item);
         item.transform.SetParent(_itemsContainer);
         Equip(item);
     }
 
     private void Equip(Item item)
     {
-        Debug.LogError($"Equipped item: {item.gameObject.name}");
+        Debug.Log($"Equipped item: {item.gameObject.name}");
         EquipedItem = item;
         EquipedItem.transform.SetParent(_rightHand);
         EquipedItem.transform.localPosition = Vector3.zero;

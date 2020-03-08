@@ -13,7 +13,7 @@ namespace a_player
         public IEnumerator moving_left()
         {
             //Arrange
-            yield return TestHelper.LoadTestScene();
+            yield return TestHelper.LoadMovementTestScene();
 
             var player = TestHelper.GetPlayer();
 
@@ -35,7 +35,7 @@ namespace a_player
         public IEnumerator moving_right()
         {
             //Arrange
-            yield return TestHelper.LoadTestScene();
+            yield return TestHelper.LoadMovementTestScene();
 
             var player = TestHelper.GetPlayer();
 

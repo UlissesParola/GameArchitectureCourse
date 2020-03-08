@@ -39,8 +39,6 @@ public partial class Crosshair : MonoBehaviour
         else
         {
             _crosshairImage.sprite = _invalidSprite.Sprite;
-        }
-        
-       
+        }       
     }
 }

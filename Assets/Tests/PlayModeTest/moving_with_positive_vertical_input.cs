@@ -12,7 +12,7 @@ namespace a_player
         public IEnumerator moving_forward()
         {
             //ARRANGE
-            yield return TestHelper.LoadTestScene();
+            yield return TestHelper.LoadMovementTestScene();
             var player = TestHelper.GetPlayer();
             player.PlayerInput.Vertical.Returns(1f);
 
@@ -32,7 +32,7 @@ namespace a_player
         public IEnumerator moving_backwards()
         {
             //ARRANGE
-            yield return TestHelper.LoadTestScene();
+            yield return TestHelper.LoadMovementTestScene();
             var player = TestHelper.GetPlayer();
             player.PlayerInput.Vertical.Returns(-1f);
             float startingZPosition = player.transform.position.z;
@@ -50,7 +50,7 @@ namespace a_player
         public IEnumerator standing_still()
         {
             //ARRANGE
-            yield return TestHelper.LoadTestScene();
+            yield return TestHelper.LoadMovementTestScene();
             var player = TestHelper.GetPlayer();
             player.PlayerInput.Vertical.Returns(0);
             float startingZPosition = player.transform.position.z;
