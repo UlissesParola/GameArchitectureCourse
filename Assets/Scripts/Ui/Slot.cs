@@ -3,21 +3,32 @@ using NSubstitute.Core;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class Slot : MonoBehaviour
 {
-    public bool IsEmpty => _item == null;
-    private Item _item;
-    private Image _icon;
+    [SerializeField]private Image _iconImage;
+    private TMP_Text _text;
+    public bool IsEmpty => Item == null;
+    public Item Item { get; private set; }
+    public Image IconImage => _iconImage;
 
     private void Awake()
     {
-        _icon = GetComponentInChildren<Image>();
+        //_icon = GetComponentInChildren<Image>();
     }
 
     public void SetItem(Item item)
     {
-        _item = item;
-        _icon.sprite = item.Icon;
+        Item = item;
+        _iconImage.sprite = item.Icon;
+    }
+
+    private void OnValidate()
+    {
+        _text = GetComponentInChildren<TMP_Text>();
+        int hotkeyNumber = transform.GetSiblingIndex() + 1;
+        _text.SetText(hotkeyNumber.ToString());
+        gameObject.name = "Slot " + hotkeyNumber;
     }
 }

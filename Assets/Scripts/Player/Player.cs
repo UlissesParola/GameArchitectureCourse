@@ -16,23 +16,38 @@ public class Player : MonoBehaviour
         PlayerInput = new PlayerInput();
         _playerMoviment = new PlayerMoviment(this);
         _playerRotator = new PlayerRotator(this);
+        PlayerInput.OnMoveModeTogglePressed += HandleMoveModeTogglePressed;
     }
 
     // Update is called once per frame
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+//        if (Input.GetKeyDown(KeyCode.Alpha1))
+//        {
+//            _playerMoviment = new PlayerMoviment(this);
+//            GetComponent<NavMeshAgent>().enabled = false;
+//        }
+//
+//        if(Input.GetKeyDown(KeyCode.Alpha2))
+//        {
+//            _playerMoviment = new NavmeshPlayerMoviment(this);
+//        }
+
+        _playerMoviment.Tick();
+        _playerRotator.Tick();
+        PlayerInput.Tick();
+    }
+
+    private void HandleMoveModeTogglePressed()
+    {
+        if (_playerMoviment is NavmeshPlayerMoviment)
         {
             _playerMoviment = new PlayerMoviment(this);
             GetComponent<NavMeshAgent>().enabled = false;
         }
-
-        if(Input.GetKeyDown(KeyCode.Alpha2))
+        else
         {
             _playerMoviment = new NavmeshPlayerMoviment(this);
         }
-
-        _playerMoviment.Tick();
-        _playerRotator.Tick();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
@@ -29,8 +30,28 @@ public class Item : MonoBehaviour
             _wasPickedUp = true;
         }
     }
+
     private void OnValidate()
     {
-        GetComponent<Collider>().isTrigger = true;
+        Collider collider = GetComponent<Collider>();
+
+        if (collider.isTrigger == false)
+        {
+            collider.isTrigger = true;
+        }
+    }
+}
+
+[CustomEditor(typeof(Item))]
+public class ItemEditor : Editor
+{
+
+    public override void OnInspectorGUI()
+    {
+        Item item = (Item) target;
+        EditorGUILayout.LabelField("Custom Item Editor");
+        GUILayout.Box(item.Icon.texture, GUILayout.Height(40), GUILayout.Width(40));
+
+        base.OnInspectorGUI();
     }
 }

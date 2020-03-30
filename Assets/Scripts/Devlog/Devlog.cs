@@ -60,13 +60,13 @@ Agora precisamos incluir a referencia para o Assembly do NSubtitute no Assembly 
 Com isso podemos utilizar o Substitute para substituir as classes de testes que teríamos que criar quando estávamos utilizando somente as Interfaces para nos ajudar nos testes.
 Vamos trocar isso:
 
-MockPlayerInput playerInput = new MockPlayerInput();
-playerInput.Vertical = 1f;
+    MockPlayerInput playerInput = new MockPlayerInput();
+    playerInput.Vertical = 1f;
 
 Por isso:
 
-var playerInput = Substitute.For<PlayerInput>();
-playerInput.Vertical.Returns(1f);
+    var playerInput = Substitute.For<PlayerInput>();
+    playerInput.Vertical.Returns(1f);
 
 E deletar a classe MockPlayerInput.
 
@@ -598,7 +598,279 @@ Nesse nós movemos o item direto para a posição do player e esperamos um frame
 */
 #endregion
 
-#region
+#region HOTBAR UI
+/*
+Para criar a hotbar vamos utilizar um panel. Vamos fixá-lo no centro inferior da tela definindo o anchor, position e pivot do Rect Transform para aquela posição.
+
+Outra mudança importante é no Cavas Scaler. Para que a UI seja reposicionada de forma automática nas diversas resoluções.
+UI Scale Mode: Scale with screen size - Isso vai avisar a nossa UI para escalonar com o tamanho da tela.
+Reference Resolution 1920x1080 - Aqui é importante decidir a resolução alvo. Full HD tem um aspect ratio muito comum e funciona bem. É importante que quando for desenvolver, o projeto esteja setado para a resolução alvo.
+Screen Match Mode: Match width or height  - Informa se a UI vai acompanhar a largura ou altura da tela.
+Match: width - O mais interessante é acompanhar a largura.
+ 
+Dentro dele vamos incluir um Grid Layoult Group, que é quem vai organizar os slots.
+O seu Child Alignment será Middle Center, para que os slots fiquem centralizados.
+O cell size será de 64x64, ou a resolução que quisermos para os ícones dos itens.
+Vamos adicionar um spacing 5 em x para que os slots não fiquem colados.
+O start Axis será horizontal.
+ 
+Os Slots também serão panels.
+Uma vez adicionados como filhos de hotbar, vão adquirir o tamanho e posicionamento automaticamente, de acordo com o definido no Grid Layoult Group.
+
+CÓDIGO HOTBAR
+Primeiramente vamos criar uma classe Hotbar que implementa monobehaviour.
+Ela terá referência para Inventory e um array de Slots. Todas serão pegas dentro do OnEnable, assim como a assinatura do evento OnItemPickedUp do Inventory:
+
+    private void OnEnable()
+    {
+        _inventory = FindObjectOfType<Inventory>();
+        _inventory.OnItemPickedUp += HandleItemPickedUp;
+        _slots = GetComponentsInChildren<Slot>();
+    }
+    
+O HandleItemPickedUp vai receber o item passado pelo invetory e adicioná-lo ao próximo slot vazio.
+
+ private void HandleItemPickedUp(Item item)
+    {
+        Slot slot = FindNextOpenSlot();
+        if (slot != null)
+        {
+            slot.SetItem(item);
+        }
+    }
+    
+A identificação de slots vazios fica por conta do FindNextOpenSlot:
+
+private Slot FindNextOpenSlot()
+    {
+        
+        foreach (Slot slot in _slots)
+        {
+            if (slot.IsEmpty)
+            {
+                return slot;
+            }
+        }
+        
+        Debug.LogError("No empty slots available");
+        return null;
+    }
+    
+Vamos olhar também a classe Slot, que vai gerenciar cada slot do hotbar. 
+A única coisa um pouco diferente dessa classe é o isEmpty
+
+    public bool IsEmpty => _item == null;
+    
+Ela terá uma variável para armezenar o Item e uma para o ícone que será apresentado.
+
+Vamos ter que adicionar uma variável ícone também à classe Item:
+
+    [SerializeField] private Sprite _icon;
+    public Sprite Icon => _icon;
+
+
+CRIAÇÃO DE ÍCONES COM BASE EM MODELOS 3D
+
+Para criar ícones com bases nos modelos 3D existentes no jogo, vamos precisar criar uma nova cena no Unity.
+Na Main Camera:
+Clear Flags -> Solid Color
+Background ->  uma cor estilo 00FF00
+
+Vamos adicionar o objeto que queremos transformar em ícone na cena.
+Resetar o seu transform, rotacioná-lo para que fique na posição que queremos na imagem, normalmente 90 em Y, e modificar o scale para que ele fique em um bom tamanho.
+Alinhar a luz da cena para que a iluminação no objeto fique correta. Ctrl + Shift + F com a luz selecionada faz com que ela fique direcionada para o ponto onde estamos olhando.
+
+Agora é tirar um print Screen. O programa Ferramenta de Captura do windows faz um bom trabalho.
+Vamos colar a imagem no GIMP e usar a ferramenta de seleção para excluir a cor de fundo. No GIMP é a ferramenta com o símbolo de varinha de condão. 
+A ferramenta de seleção padrão é a de seleção contígua, mas teremos um melhor resultado com a seleção por cor. Basta deixar o mouse pressionado na ferramenta para a opção aparecer.
+Feitas as alterações, vamos exportar a imagem. Nas opções de exportação, vamos desmarcar a Salvar Cor de Fundo.
+
+Ainda não está finalizado. Nós queremos uma imagem quadrada e não retangular. Vamos fazer a seleção utilizando a Seleção Retangular e pressionando o SHIFT para que a área selecionada seja um quadrado.
+Vamos copiar a seleção e criar uma nova imagem com CTRL + N
+No menu de criação da nova imagem, vamos definir o seu tamanho para que seja quadrado, como 512 x 512 ou 1024 x 1024, e na opção avançada "Preencher com" selecionamos Transparência.
+Caso o fundo da imagem fique muito maior que a imagem em si, podemos fazer mais uma seleção com a Seleção Retangular e, em Imagem -> Cortar para Seleção.
+Agora é só exportar novamente.
+
+Com a imagem já dentro da Unity, temos que alterar o Texture Type para Sprite 2D.
+
+INPUT PARA A HOTBAR
+
+Para não começarmos a espalhar os nossos inputs pelo código, vamos adicionar os inputs para a hotbar ao PlayerInput.
+Vamos fazer isso na forma de evento:
+
+    event Action<int> OnHotkeyPressed;
+    
+Como PlayerInput não implementa MonoBehaviour, criaremos uma função Tick para ser chamada no update de Player:
+
+    public void Tick()
+    {
+        if (OnHotkeyPressed == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < 9; i++)
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+            {
+                OnHotkeyPressed(i);
+            }
+        }
+    }
+    
+Essa função verifica se uma tecla de 1 à 9 foi pressionada e chama o evento passando o número da tecla como parâmetro.
+No começo há uma verificação para ver se o evento foi assinado.
+
+Temos também que incluir o evento e a função na interface IPlayerInput.
+
+O próximo passo é fazer a implementação do tratamento em Hotbar.
+A primeira coisa é assinar o evento OnHotkeyPressed dentro do OnEnable:
+
+    FindObjectOfType<Player>().PlayerInput.OnHotkeyPressed += HandleHotkeyPressed;
+
+Existe a opção de cachear o Player, mas como só vamos fazer uso dele, por enquanto, para assinar o evento, não há necessidade.
+
+Agora temos que escrever o tratador do evento:
+
+    private void HandleHotkeyPressed(int index)
+    {
+        if (index < 0 || index >= _slots.Length )
+        {
+            return;
+        }
+    
+        if (_slots[index].IsEmpty == false)
+        {
+            _inventory.Equip(_slots[index].Item);
+        }
+    }
+
+Ele vai receber o index do slot e verificar se há um item setado para ele. Caso haja, esse item vai ser equipado.
+Temos que alterar o acesso do Inventory.Equip() para public, assim como criar uma propriedade somente de leitura para acessar o _item em Slot.
+
+    public Item Item => _item;
+
+ou excluir o _item e definir a propriedade como abaixo:
+
+    public Item Item { get; private set; }
+    
+Quando trabalhamos com eventos, é importante lembrar de se desregistrar quando o objeto fica desabilitado. 
+Isso evita que nossa classe se registre mais de uma vez no mesmo evento, gerando múltiplas chamadas dos métodos.
+Na classe Hotbar:
+
+    private void OnDisable()
+    {
+        FindObjectOfType<Player>().PlayerInput.OnHotkeyPressed -= HandleHotkeyPressed;
+        _inventory.OnItemPickedUp -= HandleItemPickedUp;
+    }
+    
+Agora, também utilizando eventos, vamos refatorar a parte que alterna entre os modos de movimento do Player.
+Toda a sua lógica, incluíndo a leitura de input, está dentro de Player. Vamos alterar isso criando um evento OnMoveModeTogglePressed em PlayerInput e assinando-o em Player:
+
+    PlayerInput.OnMoveModeTogglePressed += HandleMoveModeTogglePressed;
+
+Sua implementação em PlayerInput fica dentro de Tick() da seguinte forma:
+
+    if (OnMoveModeTogglePressed != null && Input.GetKeyDown(KeyCode.Minus))
+        {
+            OnMoveModeTogglePressed();
+        }
+
+Já a implementação do HandleMoveModeTogglePressed fica assim:
+
+    private void HandleMoveModeTogglePressed()
+    {
+        if (_playerMoviment is NavmeshPlayerMoviment)
+        {
+            _playerMoviment = new PlayerMoviment(this);
+            GetComponent<NavMeshAgent>().enabled = false;
+        }
+        else
+        {
+            _playerMoviment = new NavmeshPlayerMoviment(this);
+        }
+    }
+    
+Dessa forma o código ficou mais claro e com as responsabilidades com as classes corretas.
+
+NOMES E TEXTO DOS SLOTS
+
+A configuração dos nossos Slots se dá de forma manual. Temos que alterar tanto o seu nome como o número representado no texto caso a caso.
+É interessante que isso aconteça automaticamente.
+
+Como estamos utilizando o TextMeshPro nos textos da UI, precisamos adicionar o seu assembly para que possa ser referenciado nos scripts.
+Fazemos isso no Scripts.asmdef na pasta de scripts. Nele vamos adicionar um novo Assembly Definition Reference e selecionar o Unity.TextMeshPro.
+Agora já podemos referencia-lo utilizando using TMPro
+
+Na classe Slot vamos adicionar uma variável para armazenar o texto:
+
+    private TMP_Text _text;
+    
+Vamos implementar o método OnValidate da seguinte forma:
+
+     private void OnValidate()
+    {
+        _text = GetComponentInChildren<TMP_Text>();
+        int hotkeyNumber = transform.GetSiblingIndex() + 1;
+        _text.SetText(hotkeyNumber.ToString());
+        gameObject.name = "Slot " + hotkeyNumber;
+    }
+
+Explicando:
+Estamos pegando o índice do gameObject entre os seus irmãos e adicionando 1, uma vez que os índices começam em 0.
+Estamos adicionando esse número no texto do Slot.
+E também alterando o seu nome com esse índice.
+
+TESTANDO OS ÍCONES
+O teste para os ícones se parece muito com o teste para o Crosshair:
+
+As principais alterações foram:
+Utilização do new WaitForFixedUpdate, para que não houvesse risco do frame seguinte acontecer antes da simulação de física. É importante alterar nos outros testes que utilizam física.
+Renomear Slot.Icon para Slot.IconImage, para reduzir a possibilidade de confusão. Já que Item.Icon faz referência a um Sprite e Slot.Icon a um Image.
+
+Outra alteração interessante é utilizar o método abaixo para inicializar certas variáveis e carregar as cenas:
+
+[UnitySetUp]
+    public IEnumerator init()
+    {
+        yield return TestHelper.LoadItemTestScene();
+        _player = TestHelper.GetPlayer();
+        _item = GameObject.FindObjectOfType<Item>();
+    }
+    
+Esse método é chamado antes de todos os outros métodos. Assim podemos excluir essas linhas redundantes e utilizar as variáveis _player e _item,
+ */
+#endregion
+
+#region EDITOR CUSTOMIZADO
+/*
+É possivel customizar o Inspector do Unity para facilitar a sua utilização.
+Existem algumas ferramentas prontas que ficilitam isso, como o Odin.
+
+Vamos criar um editor customizado para criação dos itens.
+Para isso, vamos criar uma nova classe:
+
+[CustomEditor(typeof(Item))]
+public class ItemEditor : Editor
+{
+
+    public override void OnInspectorGUI()
+    {
+        Item item = (Item) target;
+        EditorGUILayout.LabelField("Custom Item Editor");
+        GUILayout.Box(item.Icon.texture, GUILayout.Height(40), GUILayout.Width(40));
+
+        base.OnInspectorGUI();
+    }
+}
+
+A tag [CustomEditor(typeof(Item))] indica que essa é uma classe para criação de um editor customizado para a classe Item.
+A classe deve herdar de Editor e não de monobehaviour.
+Para começarmos a alterar o Inspector, vamos sobrescrever o método OnInspectorGui.
+Todo inspector tem um objeto alvo, que é o que está sendo mostrado no inspector. Para pegarmos esse objeto, utilizamos: Item item = (Item) target; Detalhe para o cast.
+EditorGuiLayout apresenta os itens que podemos criar no nosso inspector.
+
+ */
 #endregion
 
 
