@@ -870,9 +870,46 @@ Para começarmos a alterar o Inspector, vamos sobrescrever o método OnInspector
 Todo inspector tem um objeto alvo, que é o que está sendo mostrado no inspector. Para pegarmos esse objeto, utilizamos: Item item = (Item) target; Detalhe para o cast.
 EditorGuiLayout apresenta os itens que podemos criar no nosso inspector.
 
+Caso o GUILayout.Box receba uma textura nula, nenhuma parte do inspector é apresentada. 
+Uma forma de visualizar esses dados nessa situação é utilizar o modo debug do inspector, uma vez que ele apresenta o inspector normal.
+O jeito de previnir isso é verificar se o Icon não é nulo e, caso seja, apresentar uma mensagem de aviso:
+
+        if (item.Icon != null)
+        {
+            
+            GUILayout.Box(item.Icon.texture, GUILayout.Height(40), GUILayout.Width(40));    
+        }
+        else
+        {
+            EditorGUILayout.HelpBox("No Icon Selected", MessageType.Warning);
+        }
+
+LAYOUT
+
+Para deixarmos que os itens fiquem alinhados horizonalmente no inspector, precisamos usar os métodos como abaixo:
+        
+        EditorGUILayout.BeginHorizontal();
+            //Código a ser alinhado
+        EditorGUILayout.EndHorizontal();
+
+O item do inspector para seleção de objetos é o abaixo:
+
+    EditorGUILayout.ObjectField(item.Icon, typeof(Sprite), false, GUILayout.Width(200)); 
+
+O primeiro parâmetro é para qual propriedade aquele objeto será adicionado. 
+No nosso caso estamos recebendo um objeto do tipo Sprite que será armazenado na propriedade Icon do item referenciado no inspector.
+O parâmentro seguinte é o tipo de objeto aceito no seletor.
+O teceiro parâmetro é um booleano indicando se o seletor poderá receber objetos arrastados direto da hierarquia do cena, o q não é o caso.
+
  */
 #endregion
 
+#region ATALHOS E DICAS
+/*
+Para mover uma linha:
+    Selecionar a linha e utilizar o atalho ALT + SHIFT + Tecla direcional.
+ */
+#endregion
 
 
 
