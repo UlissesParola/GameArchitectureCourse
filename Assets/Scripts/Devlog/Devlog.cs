@@ -896,10 +896,45 @@ O item do inspector para seleção de objetos é o abaixo:
 
     EditorGUILayout.ObjectField(item.Icon, typeof(Sprite), false, GUILayout.Width(200)); 
 
-O primeiro parâmetro é para qual propriedade aquele objeto será adicionado. 
+O primeiro parâmetro é o valor default. 
 No nosso caso estamos recebendo um objeto do tipo Sprite que será armazenado na propriedade Icon do item referenciado no inspector.
 O parâmentro seguinte é o tipo de objeto aceito no seletor.
 O teceiro parâmetro é um booleano indicando se o seletor poderá receber objetos arrastados direto da hierarquia do cena, o q não é o caso.
+Esse método retorna o objeto que foi selecionado no editor como Object.
+
+Essa função retorna uma valor que tem que ser atribuído à propriedade correspondente do objeto alvo do inspector.
+No nosso exemplo estamos recebendo um sprite que vai ser armazenado na propriedade Icon do objeto Item.
+Logo, a propriedade do objeto icon tem q ser alterada quando selecionamos o sprite no inspector.
+Uma forma de se fazer isso é fazer uma atribuição direta como abaixo:
+
+    item.Icon = (Sprite)EditorGUILayout.ObjectField(item.Icon, typeof(Sprite), false, GUILayout.Width(200)); 
+    
+Essa linha só funcionaria se a propriedade fosse pública. Caso contrário, não é possível fazer a atribuição desse jeito.
+Alterar a acessibilidade da propriedade para solucionar esse problema quebra com o encapsulamento e não é recomendado.
+A forma correta de se fazer isso é utilizando o objeto da classe Editor SerializedObject e chamando a su função FindProperty().
+Essa classe envelopa o objeto inspecionado no editor e a função acessa suas propriedades, mesmo que privadas.
+O código para alteração de propriedades seria esse:
+
+        var property = serializedObject.FindProperty("_icon");
+        var sprite = (Sprite)EditorGUILayout.ObjectField(item.Icon, typeof(Sprite), false, GUILayout.Width(200));
+        property.objectReferenceValue = sprite;
+        serializedObject.ApplyModifiedProperties();
+
+Na primeira linha estamos recuperando a propriedade que queremos alterar no objeto selecionado no inspector.
+Na segunda linha recebemos o objeto que foi selecionado na caixa seletora do editor, fazemos um cast para o tipo que queremos e guardamos ele em uma variável.
+Na linha seguinte passamos o valor recebido na linha anterior para a propriedade que estamos alterando, utilizando a propriedade objectReferenceValue do serializedObject.
+Na última linha aplicamos as alterações no objeto selecionado em si.
+Uma última opção é utilizar o using na declaração da property. Assim ela é liberada automaticamente no final e facilita também a visualização. Lembrando que isso é opcional.
+
+        using (var property = serializedObject.FindProperty("_icon"))
+        {
+            var sprite = (Sprite)EditorGUILayout.ObjectField(item.Icon, typeof(Sprite), false, GUILayout.Width(200));
+            property.objectReferenceValue = sprite;
+            serializedObject.ApplyModifiedProperties();
+        }
+
+O código para alteração do Crosshairdefinition é basicamente o mesmo, só alterando o tipo.
+Podemos extrair métodos para facilitar a legibilidade do código.
 
  */
 #endregion

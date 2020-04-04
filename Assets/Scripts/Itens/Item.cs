@@ -50,22 +50,53 @@ public class ItemEditor : Editor
     {
         Item item = (Item) target;
 
+        DrawIcon(item);
+        DrawCrosshair(item);
+
+        base.OnInspectorGUI();
+    }
+
+    private void DrawIcon(Item item)
+    {
         EditorGUILayout.BeginHorizontal();
             if (item.Icon != null)
             {
                 EditorGUILayout.LabelField("Item", GUILayout.Width(145));
-                GUILayout.Box(item.Icon.texture, GUILayout.Height(40), GUILayout.Width(40));    
+                GUILayout.Box(item.Icon.texture, GUILayout.Height(40), GUILayout.Width(40));
             }
             else
             {
                 EditorGUILayout.HelpBox("No Icon Selected", MessageType.Warning);
             }
 
-            EditorGUILayout.ObjectField(item.Icon, typeof(Sprite), false, GUILayout.Width(200));    
-            
+            using (var property = serializedObject.FindProperty("_icon"))
+            {
+                var sprite = (Sprite) EditorGUILayout.ObjectField(item.Icon, typeof(Sprite), false, GUILayout.Width(200));
+                property.objectReferenceValue = sprite;
+                serializedObject.ApplyModifiedProperties();
+            }
         EditorGUILayout.EndHorizontal();
-        
+    }
+    
+    private void DrawCrosshair(Item item)
+    {
+        EditorGUILayout.BeginHorizontal();
+        if (item.CrosshairDefinition?.Sprite != null)
+        {
+            EditorGUILayout.LabelField("Crosshair", GUILayout.Width(145));
+            GUILayout.Box(item.CrosshairDefinition.Sprite.texture, GUILayout.Height(40), GUILayout.Width(40));
+        }
+        else
+        {
+            EditorGUILayout.HelpBox("No Crosshair Selected", MessageType.Warning);
+        }
 
-        base.OnInspectorGUI();
+        using (var property = serializedObject.FindProperty("_crosshairDefinition"))
+        {
+            var crosshairDefinition = (CrosshairDefinition) EditorGUILayout.ObjectField(item.CrosshairDefinition, typeof(CrosshairDefinition), false, GUILayout.Width(200));
+            property.objectReferenceValue = crosshairDefinition;
+            serializedObject.ApplyModifiedProperties();
+        }
+        EditorGUILayout.EndHorizontal();
     }
 }
