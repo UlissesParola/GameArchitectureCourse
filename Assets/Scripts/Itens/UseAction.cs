@@ -3,6 +3,6 @@
 [Serializable]
 public struct UseAction
 {
-    public UseMode useMode;
+    public UseMode UseMode;
     public ItemComponent TargetComponent;
 }

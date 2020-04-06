@@ -52,8 +52,9 @@ public class ItemEditor : Editor
 
         DrawIcon(item);
         DrawCrosshair(item);
+        DrawActions(item);
 
-        base.OnInspectorGUI();
+        //base.OnInspectorGUI();
     }
 
     private void DrawIcon(Item item)
@@ -98,5 +99,40 @@ public class ItemEditor : Editor
             serializedObject.ApplyModifiedProperties();
         }
         EditorGUILayout.EndHorizontal();
+    }
+
+    private void DrawActions(Item item)
+    {
+        
+        using (var property = serializedObject.FindProperty("_actions"))
+        {
+            for (int i = 0; i < property.arraySize; i++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                    if (GUILayout.Button("x", GUILayout.Width(25)))
+                    {
+                        property.DeleteArrayElementAtIndex(i);
+                        serializedObject.ApplyModifiedProperties();
+                        break;
+                    }
+
+                    var action = property.GetArrayElementAtIndex(i);
+                    if (action != null)
+                    {
+                        var useModeProperty = action.FindPropertyRelative("UseMode");
+                        var targetComponent = action.FindPropertyRelative("TargetComponent");
+
+                        useModeProperty.enumValueIndex = (int) (UseMode) EditorGUILayout.EnumPopup(
+                            (UseMode) useModeProperty.enumValueIndex,
+                            GUILayout.Width(80));
+
+                        EditorGUILayout.PropertyField(targetComponent, GUIContent.none, false);
+
+                        serializedObject.ApplyModifiedProperties();
+                    }
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+        
     }
 }

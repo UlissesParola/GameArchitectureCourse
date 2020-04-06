@@ -936,6 +936,47 @@ Uma última opção é utilizar o using na declaração da property. Assim ela �
 O código para alteração do Crosshairdefinition é basicamente o mesmo, só alterando o tipo.
 Podemos extrair métodos para facilitar a legibilidade do código.
 
+A parte de customização das actions é um pouco diferente das anteriores por se tratar de um array, além de cada action possuir dois componentes.
+O princípio é o mesmo: 
+
+    using (var property = serializedObject.FindProperty("_actions"))
+
+O tipo SerializedProperty, que é retornado pelo serializedObject.FindProperty também possui ferramentas para tratamento de arrays.
+Dessa forma, o restante do código fica dentro de um loop que percorre todos os itens:
+
+    for (int i = 0; i < property.arraySize; i++)
+    
+A primeira coisa que faremos é a inclusão de um botão para excluir uma action:
+
+    if (GUILayout.Button("x", GUILayout.Width(25)))
+    {
+        property.DeleteArrayElementAtIndex(i);
+        serializedObject.ApplyModifiedProperties();
+        break;
+    }
+    
+Em seguida, caso não haja nenhuma exclusao, vamos pegar o elemento armazenado no índice do array:
+    
+    var action = property.GetArrayElementAtIndex(i);
+    
+Se ele não for nulo, vamos pegar as propriedades dentro do UseAction utilizando o método FindPropertyRelative. 
+Esse método funciona da mesma forma que o FindProperty, mas para propriedades filhas.
+
+        var useModeProperty = action.FindPropertyRelative("UseMode");
+        var targetComponent = action.FindPropertyRelative("TargetComponent");
+
+A parte mais complicada é a criação do menu de seleção do UseMode, mais por causa dos diversos casts necessários: 
+
+        useModeProperty.enumValueIndex = (int) (UseMode) EditorGUILayout.EnumPopup(
+            (UseMode) useModeProperty.enumValueIndex,
+            GUILayout.Width(80));
+
+No final criamos uma caixa de seleção para o ItemComponent e aplicamos as mudanças:
+
+        EditorGUILayout.PropertyField(targetComponent, GUIContent.none, false);
+        serializedObject.ApplyModifiedProperties();
+    }
+
  */
 #endregion
 

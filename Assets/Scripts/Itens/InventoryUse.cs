@@ -22,7 +22,7 @@ public class InventoryUse : MonoBehaviour
 
         foreach (var useAction in  _inventory.EquipedItem.Actions)
         {
-            if (useAction.TargetComponent.CanUse && WasPressed(useAction.useMode))
+            if (useAction.TargetComponent.CanUse && WasPressed(useAction.UseMode))
             {
                 useAction.TargetComponent.Use();
             }
