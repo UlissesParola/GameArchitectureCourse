@@ -132,7 +132,38 @@ public class ItemEditor : Editor
                     }
                 EditorGUILayout.EndHorizontal();
             }
+            
+            if (GUILayout.Button("Auto Assign Actions"))
+            {
+                List<ItemComponent> assignedItemComponents = new List<ItemComponent>();
+                for (int i = 0; i < property.arraySize; i++)
+                {
+                    var action = property.GetArrayElementAtIndex(i);
+                    if (action != null)
+                    {
+                        var targetComponent = action.FindPropertyRelative("TargetComponent");
+                        var assignedItemComponent = targetComponent.objectReferenceValue as ItemComponent;
+                        assignedItemComponents.Add(assignedItemComponent);
+                    }
+                }
+
+                foreach (var itemComponent in item.GetComponentsInChildren<ItemComponent>())
+                {
+                    if (assignedItemComponents.Contains(itemComponent))
+                    {
+                        continue;
+                    }
+                    
+                    property.InsertArrayElementAtIndex(property.arraySize);
+                    var action = property.GetArrayElementAtIndex(property.arraySize - 1);
+                    var targetComponent = action.FindPropertyRelative("TargetComponent");
+                    targetComponent.objectReferenceValue = itemComponent;
+                    serializedObject.ApplyModifiedProperties();
+                }
+            }
         }
+
+        
         
     }
 }
