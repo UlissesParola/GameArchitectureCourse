@@ -10,6 +10,10 @@
             <e p="Devlog.cs" t="Include" />
             <e p="DevlogTxt.txt" t="Include" />
           </e>
+          <e p="Entities" t="Include">
+            <e p="Entity.cs" t="Include" />
+            <e p="ITakeHits.cs" t="Include" />
+          </e>
           <e p="Itens" t="Include">
             <e p="Inventory.cs" t="Include" />
             <e p="InventoryUse.cs" t="Include" />
