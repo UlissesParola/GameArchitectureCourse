@@ -7,6 +7,7 @@ public class Entity : MonoBehaviour, ITakeHits
 {
     [SerializeField] private int _maxHealth;
     public int Health { get; private set; }
+    public event Action OnDied;
 
     private void OnEnable()
     {
@@ -34,5 +35,6 @@ public class Entity : MonoBehaviour, ITakeHits
     private void Die()
     {
         Debug.Log("Dead");
+        OnDied?.Invoke();
     }
 }

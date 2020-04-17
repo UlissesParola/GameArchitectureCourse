@@ -507,7 +507,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1837475335}
   - component: {fileID: 1837475336}
+  - component: {fileID: 1837475338}
   - component: {fileID: 1837475337}
+  - component: {fileID: 1837475339}
   m_Layer: 0
   m_Name: NPC
   m_TagString: Untagged
@@ -557,6 +559,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _maxHealth: 5
+--- !u!95 &1837475338
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837475334}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 7b28861e0b81fa4409eb7fa4f2feddbd, type: 3}
+  m_Controller: {fileID: 9100000, guid: 0a98f0f17120daf479429442599d999a, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &1837475339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837475334}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05e674c08f026c447906ff93ac9e1b01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &2029719583 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -4216859302048453862, guid: 7b28861e0b81fa4409eb7fa4f2feddbd,
